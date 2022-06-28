@@ -65,28 +65,28 @@ static BOOL zip_pack(const unsigned char* p_input,
 }
 
 BOOL srv_c_zip_pack_best_speed(const unsigned char* p_input,
-                         const size_t input_sz,
-                         unsigned char** p_output,
-                         size_t* output_sz,
-                         const BOOL allocate_buffer)
+                               const size_t input_sz,
+                               unsigned char** p_output,
+                               size_t* output_sz,
+                               const BOOL allocate_buffer)
 {
     return zip_pack(p_input, input_sz, p_output, output_sz, Z_BEST_SPEED, allocate_buffer);
 }
 
 BOOL srv_c_zip_pack_best_size(const unsigned char* p_input,
-                        const size_t input_sz,
-                        unsigned char** p_output,
-                        size_t* output_sz,
-                        const BOOL allocate_buffer)
+                              const size_t input_sz,
+                              unsigned char** p_output,
+                              size_t* output_sz,
+                              const BOOL allocate_buffer)
 {
     return zip_pack(p_input, input_sz, p_output, output_sz, Z_BEST_COMPRESSION, allocate_buffer);
 }
 
 BOOL srv_c_zip_unpack(const unsigned char* p_input,
-                const size_t input_sz,
-                unsigned char** pp_output,
-                size_t* buff_sz,
-                const BOOL allocate_buffer)
+                      const size_t input_sz,
+                      unsigned char** pp_output,
+                      size_t* buff_sz,
+                      const BOOL allocate_buffer)
 {
     if (!p_input || !input_sz || !pp_output || !buff_sz)
         return false;
@@ -94,22 +94,25 @@ BOOL srv_c_zip_unpack(const unsigned char* p_input,
     if (!allocate_buffer && !*pp_output)
         return false;
 
-    uLong sz_zip_predicted = (uLong)SRV_C_MAX(input_sz, *buff_sz);
-
     unsigned char* p_output = NULL;
 
+    uLong sz_zip, sz_zip_predicted = 0;
     if (allocate_buffer)
     {
+        sz_zip_predicted = (uLong)SRV_C_MAX(input_sz, *buff_sz);
+
         p_output = (unsigned char*)malloc(sz_zip_predicted);
         if (!p_output)
             return false;
+
+        sz_zip = sz_zip_predicted;
     }
     else
     {
         p_output = *pp_output;
+        sz_zip = *buff_sz;
     }
 
-    uLong sz_zip = sz_zip_predicted;
     int result = uncompress((Bytef*)p_output, &sz_zip, (const Bytef*)p_input, input_sz);
 
     if (Z_OK != result)
